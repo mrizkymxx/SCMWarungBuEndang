@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SCM Warung Bu Endang</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { 
+            font-family: 'Inter', sans-serif; 
+            background-color: #F9FAFB;
+        }
+        .tab-button {
+            @apply whitespace-nowrap py-2 px-3 sm:px-4 text-sm font-medium text-gray-500 rounded-md transition-colors duration-200;
+        }
+        .tab-button.active { 
+            @apply bg-gray-200 text-gray-800;
+        }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        .form-input { 
+            @apply w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow; 
+        }
+        .btn-primary { 
+            @apply flex items-center justify-center w-full bg-blue-600 text-white font-semibold py-2 px-4 rounded-md shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200 transform hover:-translate-y-0.5; 
+        }
+        .btn-secondary {
+            @apply flex items-center justify-center w-full bg-gray-200 text-gray-700 font-semibold py-2 px-4 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors;
+        }
+        .card {
+            @apply bg-white p-5 sm:p-6 rounded-lg border border-gray-200;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .toast {
+            @apply px-4 py-3 rounded-md shadow-lg text-white font-semibold transition-all duration-300 transform;
+        }
+        .toast-success { @apply bg-green-500; }
+        .toast-info { @apply bg-blue-500; }
+        .toast.show { @apply opacity-100 translate-y-0; }
+        .toast.hide { @apply opacity-0 translate-y-4; }
+    </style>
+</head>
+<body class="text-gray-800 flex flex-col min-h-screen">
+
+    <div class="container mx-auto max-w-2xl p-4 flex-grow">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900">SCM Warung Bu Endang</h1>
+            <p class="text-gray-500 mt-2">Manajemen harian dari belanja hingga evaluasi.</p>
+        </header>
+
+        <!-- Tabs Navigation -->
+        <div class="mb-6">
+            <div class="overflow-x-auto no-scrollbar">
+                <nav class="flex space-x-1 sm:space-x-2 p-1 bg-gray-100 rounded-lg" id="tabs">
+                    <button data-tab="perencanaan" class="tab-button active flex-1 justify-center">Perencanaan</button>
+                    <button data-tab="produksi" class="tab-button flex-1 justify-center">Produksi</button>
+                    <button data-tab="penjualan" class="tab-button flex-1 justify-center">Penjualan</button>
+                    <button data-tab="laporan" class="tab-button flex-1 justify-center">Laporan</button>
+                    <button data-tab="riwayat" class="tab-button flex-1 justify-center">Riwayat</button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Tabs Content -->
+        <main id="tab-contents">
+            <!-- Perencanaan Tab -->
+            <div id="perencanaan" class="tab-content active space-y-6">
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4 flex items-center">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2 text-gray-500"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                        Daftar Belanja Harian
+                    </h2>
+                    <form id="shopping-form" class="space-y-4">
+                        <input type="text" id="item-name" placeholder="Nama Barang (e.g., Beras)" class="form-input" required>
+                        <div class="grid grid-cols-3 gap-4">
+                            <input type="number" id="item-qty" placeholder="Jumlah" class="form-input" required>
+                            <input type="text" id="item-unit" placeholder="Satuan" class="form-input" required>
+                            <input type="number" id="item-price" placeholder="Harga" class="form-input" required>
+                        </div>
+                        <button type="submit" class="btn-primary">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Tambah Belanjaan
+                        </button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-3">Estimasi Pengeluaran</h3>
+                    <div id="shopping-list" class="space-y-1"></div>
+                    <div class="border-t border-gray-200 mt-4 pt-4 flex justify-between font-bold text-lg">
+                        <span>Total:</span>
+                        <span id="total-expense">Rp 0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Produksi Tab -->
+            <div id="produksi" class="tab-content space-y-6">
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">Menu Hari Ini</h2>
+                    <form id="menu-form" class="flex items-center gap-4">
+                        <input type="text" id="menu-name" placeholder="Nama Menu" class="form-input" required>
+                        <input type="number" id="menu-portion" placeholder="Porsi" class="form-input max-w-[100px]" required>
+                        <button type="submit" class="btn-primary !w-auto px-4">Tambah</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h3 class="text-lg font-semibold mb-3">Daftar Menu & Stok Awal</h3>
+                    <div id="menu-list-production" class="space-y-1"></div>
+                </div>
+            </div>
+
+            <!-- Penjualan Tab -->
+            <div id="penjualan" class="tab-content">
+                 <div class="card">
+                    <h2 class="text-xl font-semibold mb-1">Catat Penjualan</h2>
+                    <p class="text-sm text-gray-500 mb-4">Input harga jual & catat porsi terjual.</p>
+                    <div id="sales-menu" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+
+            <!-- Laporan Tab -->
+            <div id="laporan" class="tab-content space-y-6">
+                <div class="card">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-semibold">Laporan Harian</h2>
+                        <button id="reset-day-btn" class="btn-secondary !w-auto text-sm px-3 py-1.5 transition-colors">Mulai Hari Baru</button>
+                    </div>
+                     <button id="generate-report" class="flex items-center justify-center w-full bg-gradient-to-br from-blue-600 to-blue-700 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-300 transform hover:-translate-y-1 mb-6 text-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-3"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><line x1="10" y1="9" x2="8" y2="9"></line></svg>
+                        Buat Laporan Hari Ini
+                     </button>
+                    <div id="report-content" class="space-y-6 hidden">
+                        <!-- Report summary will be injected here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Riwayat Tab -->
+             <div id="riwayat" class="tab-content space-y-6">
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">Laporan Bulan Ini</h2>
+                    <div id="monthly-summary" class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                        <!-- Monthly summary will be injected here -->
+                    </div>
+                </div>
+                <div class="card">
+                    <h2 class="text-xl font-semibold mb-4">Riwayat Laporan</h2>
+                    <div id="report-history-list" class="space-y-2">
+                        <!-- History list will be injected here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <footer class="text-center py-4">
+        <a href="https://github.com/mrizkymxx" target="_blank" rel="noopener noreferrer" class="inline-flex items-center text-sm text-gray-500 hover:text-gray-800 transition-colors">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.168 6.839 9.492.5.092.682-.217.682-.482 0-.237-.009-.868-.014-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.031-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.203 2.398.1 2.651.64.7 1.03 1.595 1.03 2.688 0 3.848-2.338 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.001 10.001 0 0022 12c0-5.523-4.477-10-10-10z" clip-rule="evenodd"></path></svg>
+            © 2025 Muhammad Rizky. All rights reserved.
+        </a>
+    </footer>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2"></div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    // --- STATE MANAGEMENT ---
+    const state = {
+        shoppingList: [],
+        menuItems: [],
+        reportHistory: [],
+        currentReportData: null
+    };
+
+    const DB_NAME = 'wartegSCMState';
+
+    // --- UTILITY FUNCTIONS ---
+    const formatCurrency = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(amount);
+    const formatDate = (date) => new Date(date).toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+    // --- ICONS ---
+    const trashIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="pointer-events-none"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>`;
+    const saveIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>`;
+    const updateIcon = `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mr-2"><path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16"></path><path d="M21 21v-5h-5"></path></svg>`;
+
+    // --- UI & TOAST ---
+    const toastContainer = document.getElementById('toast-container');
+    const showToast = (message, type = 'success') => {
+        const toast = document.createElement('div');
+        toast.className = `toast toast-${type} opacity-0 translate-y-4`;
+        toast.textContent = message;
+        toastContainer.appendChild(toast);
+        setTimeout(() => toast.classList.add('show'), 10);
+        setTimeout(() => {
+            toast.classList.remove('show');
+            toast.classList.add('hide');
+            toast.addEventListener('transitionend', () => toast.remove());
+        }, 3000);
+    };
+    
+    // --- LOCAL STORAGE FUNCTIONS ---
+    const saveState = () => {
+        try {
+            const dataToSave = {
+                shoppingList: state.shoppingList,
+                menuItems: state.menuItems,
+                reportHistory: state.reportHistory
+            };
+            localStorage.setItem(DB_NAME, JSON.stringify(dataToSave));
+        } catch (e) {
+            console.error("Failed to save state:", e);
+        }
+    };
+
+    const loadState = () => {
+        try {
+            const savedState = localStorage.getItem(DB_NAME);
+            if (savedState) {
+                const parsed = JSON.parse(savedState);
+                state.shoppingList = parsed.shoppingList || [];
+                state.menuItems = parsed.menuItems || [];
+                state.reportHistory = parsed.reportHistory || [];
+            } else {
+                // Load dummy data if no state is saved
+                state.shoppingList = [
+                    { name: 'Daging Babi', qty: 10, unit: 'kg', price: 120000 },
+                    { name: 'Daging Ayam', qty: 8, unit: 'kg', price: 35000 },
+                    { name: 'Telur Ayam', qty: 5, unit: 'kg', price: 28000 },
+                    { name: 'Tempe', qty: 20, unit: 'papan', price: 5000 },
+                    { name: 'Tahu', qty: 20, unit: 'papan', price: 4000 },
+                    { name: 'Beras Pandan Wangi', qty: 25, unit: 'kg', price: 15000 },
+                    { name: 'Minyak Goreng', qty: 5, unit: 'liter', price: 18000 },
+                    { name: 'Sayur Kangkung', qty: 10, unit: 'ikat', price: 2500 },
+                    { name: 'Bumbu Komplit', qty: 1, unit: 'paket', price: 50000 }
+                ];
+                state.menuItems = [
+                    { name: 'Babi Panggang', portion: 30, sold: 0, sellPrice: 25000 },
+                    { name: 'Ayam Goreng', portion: 40, sold: 0, sellPrice: 15000 },
+                    { name: 'Telur Balado', portion: 50, sold: 0, sellPrice: 7000 },
+                    { name: 'Orek Tempe', portion: 35, sold: 0, sellPrice: 6000 },
+                    { name: 'Tumis Kangkung', portion: 30, sold: 0, sellPrice: 5000 },
+                    { name: 'Nasi Putih', portion: 100, sold: 0, sellPrice: 5000 },
+                    
+                ];
+                
+                const createDummyReport = (daysAgo, income, expense, profit, notes) => {
+                    const date = new Date();
+                    date.setDate(date.getDate() - daysAgo);
+                    return { date: date.toISOString(), totalIncome: income, totalExpense: expense, profit: profit, notes: notes, sortedMenu: [] };
+                };
+
+                state.reportHistory = [
+                    createDummyReport(3, 1250000, 950000, 300000, "Ayam goreng sangat laku, porsi perlu ditambah."),
+                    createDummyReport(2, 980000, 1100000, -120000, "Hujan deras, penjualan menurun drastis."),
+                    createDummyReport(1, 1850000, 1500000, 350000, "Hari gajian, penjualan sangat ramai. Stok babi panggang habis.")
+                ];
+
+                saveState(); // Save dummy data
+            }
+        } catch (e) {
+            console.error("Failed to load state:", e);
+        }
+    };
+
+    // --- UI SELECTORS ---
+    const tabs = document.getElementById('tabs');
+    const shoppingForm = document.getElementById('shopping-form');
+    const shoppingListEl = document.getElementById('shopping-list');
+    const totalExpenseEl = document.getElementById('total-expense');
+    const menuForm = document.getElementById('menu-form');
+    const menuListProductionEl = document.getElementById('menu-list-production');
+    const salesMenuEl = document.getElementById('sales-menu');
+    const generateReportBtn = document.getElementById('generate-report');
+    const reportContentEl = document.getElementById('report-content');
+    const resetDayBtn = document.getElementById('reset-day-btn');
+    const monthlySummaryEl = document.getElementById('monthly-summary');
+    const reportHistoryListEl = document.getElementById('report-history-list');
+
+    // --- HELPER FUNCTIONS for Report State ---
+    const flagReportForUpdate = () => {
+        // Only flag if a report is currently visible.
+        if (reportContentEl.classList.contains('hidden')) return;
+
+        reportContentEl.classList.add('hidden');
+        const reportTabButton = document.querySelector('button[data-tab="laporan"]');
+        if (reportTabButton && !reportTabButton.classList.contains('font-bold')) {
+            showToast('Data berubah. Buat ulang laporan.', 'info');
+            reportTabButton.classList.add('font-bold', 'text-blue-600');
+        }
+    };
+
+    const unflagReportForUpdate = () => {
+        const reportTabButton = document.querySelector('button[data-tab="laporan"]');
+        if (reportTabButton) {
+            reportTabButton.classList.remove('font-bold', 'text-blue-600');
+        }
+    };
+
+    // --- RENDER FUNCTIONS ---
+    const renderAll = () => {
+        renderShoppingList();
+        renderProductionMenu();
+        renderSalesMenu();
+        renderReportHistory();
+    };
+    
+    const renderShoppingList = () => {
+        shoppingListEl.innerHTML = '';
+        if (state.shoppingList.length === 0) {
+            shoppingListEl.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada barang belanjaan.</p>';
+        } else {
+            state.shoppingList.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center p-3 border-b border-gray-100';
+                itemEl.innerHTML = `
+                    <div><p class="font-medium text-gray-800">${item.name}</p><p class="text-sm text-gray-500">${item.qty} ${item.unit}</p></div>
+                    <div class="flex items-center gap-4">
+                        <span class="font-medium text-gray-700 text-sm sm:text-base">${formatCurrency(item.price * item.qty)}</span>
+                        <button data-index="${index}" class="remove-shopping-item text-gray-400 hover:text-red-500 p-1 rounded-md transition-colors">${trashIcon}</button>
+                    </div>`;
+                shoppingListEl.appendChild(itemEl);
+            });
+        }
+        const totalExpense = state.shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        totalExpenseEl.textContent = formatCurrency(totalExpense);
+    };
+
+    const renderProductionMenu = () => {
+        menuListProductionEl.innerHTML = '';
+        if (state.menuItems.length === 0) {
+            menuListProductionEl.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada menu yang ditambahkan.</p>';
+        } else {
+            state.menuItems.forEach((item, index) => {
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center p-3 border-b border-gray-100';
+                itemEl.innerHTML = `
+                    <span class="font-medium">${item.name}</span>
+                    <div class="flex items-center gap-4">
+                        <span class="text-gray-600">Stok: <strong>${item.portion} porsi</strong></span>
+                        <button data-index="${index}" class="remove-menu-item text-gray-400 hover:text-red-500 p-1 rounded-md transition-colors">${trashIcon}</button>
+                    </div>`;
+                menuListProductionEl.appendChild(itemEl);
+            });
+        }
+    };
+    
+    const renderSalesMenu = () => {
+        salesMenuEl.innerHTML = '';
+         if (state.menuItems.length === 0) {
+            salesMenuEl.innerHTML = '<p class="text-gray-500 text-center col-span-full py-8">Silakan tambah menu di tab <strong>Produksi</strong>.</p>';
+        } else {
+            state.menuItems.forEach((item, index) => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-4 rounded-lg border border-gray-200';
+                card.innerHTML = `
+                    <h4 class="font-semibold text-lg text-gray-800">${item.name}</h4>
+                    <div class="flex items-center gap-2 my-3">
+                        <span class="text-sm text-gray-600">Rp</span>
+                        <input type="number" id="price-${index}" data-index="${index}" class="form-input !py-1 price-input w-full" value="${item.sellPrice || ''}" placeholder="Harga Jual">
+                    </div>
+                    <div class="my-4 text-center"><p class="text-4xl font-bold tracking-tight">${item.sold}</p><p class="text-sm text-gray-500">Porsi Terjual</p></div>
+                    <div class="flex justify-between items-center text-sm text-gray-500 mb-4"><span>Stok Awal: ${item.portion}</span><span class="font-semibold text-gray-700">Sisa: ${item.portion - item.sold}</span></div>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button data-index="${index}" class="sell-btn-minus bg-gray-200 text-gray-700 rounded-md py-2 font-bold hover:bg-gray-300 transition-colors">-</button>
+                        <button data-index="${index}" class="sell-btn-plus bg-blue-500 text-white rounded-md py-2 font-bold hover:bg-blue-600 transition-colors">+</button>
+                    </div>`;
+                salesMenuEl.appendChild(card);
+            });
+        }
+    };
+    
+    const renderReport = () => {
+        const totalExpense = state.shoppingList.reduce((sum, item) => sum + (item.price * item.qty), 0);
+        const totalIncome = state.menuItems.reduce((sum, item) => sum + (item.sold * (item.sellPrice || 0)), 0);
+        const profit = totalIncome - totalExpense;
+        const sortedMenu = [...state.menuItems].sort((a,b) => b.sold - a.sold);
+
+        state.currentReportData = { totalExpense, totalIncome, profit, sortedMenu, date: new Date().toISOString() };
+        
+        let menuSummaryHtml = '';
+        if(sortedMenu.length === 0) {
+            menuSummaryHtml = '<p class="text-gray-500 text-center py-4">Tidak ada data penjualan.</p>';
+        } else {
+            sortedMenu.forEach(item => {
+                let badge = '';
+                if (item.sold === 0) {
+                    badge = '<span class="text-xs font-medium mr-2 px-2.5 py-0.5 rounded bg-red-100 text-red-800 border border-red-200">Tidak Laku</span>';
+                } else if ((item.portion - item.sold) === 0) {
+                    badge = '<span class="text-xs font-medium mr-2 px-2.5 py-0.5 rounded bg-green-100 text-green-800 border border-green-200">Habis Terjual</span>';
+                }
+                menuSummaryHtml += `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-gray-50 p-3 rounded-md border border-gray-200">
+                        <div class="mb-1 sm:mb-0">${badge}<span class="font-medium">${item.name}</span></div>
+                        <span class="text-sm text-gray-600">Terjual: <strong>${item.sold}</strong>, Sisa: <strong>${item.portion - item.sold}</strong></span>
+                    </div>`;
+            });
+        }
+
+        const existingReportIndex = state.reportHistory.findIndex(report => report.date.split('T')[0] === state.currentReportData.date.split('T')[0]);
+        const isAlreadySaved = existingReportIndex > -1;
+
+        reportContentEl.innerHTML = `
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                <div class="bg-green-50 p-4 rounded-lg border border-green-200"><p class="text-sm text-green-700">Total Pemasukan</p><p class="text-2xl font-bold text-green-800">${formatCurrency(totalIncome)}</p></div>
+                <div class="bg-red-50 p-4 rounded-lg border border-red-200"><p class="text-sm text-red-700">Total Pengeluaran</p><p class="text-2xl font-bold text-red-800">${formatCurrency(totalExpense)}</p></div>
+                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200"><p class="text-sm text-blue-700">Estimasi Profit</p><p class="text-2xl font-bold text-blue-800">${formatCurrency(profit)}</p></div>
+            </div>
+            <div><h3 class="text-lg font-semibold mb-2">Ringkasan Penjualan Menu</h3><div class="space-y-2">${menuSummaryHtml}</div></div>
+            <div><h3 class="text-lg font-semibold mb-2">Catatan Untuk Besok</h3><textarea id="notes-for-tomorrow" class="form-input" rows="3" placeholder="Contoh: Kurangi masak orek tempe, perbanyak ayam goreng."></textarea></div>
+            <button id="save-report-btn" class="flex items-center justify-center w-full bg-gray-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-300 transform hover:-translate-y-1 mt-4">${saveIcon}Simpan Laporan Harian</button>
+        `;
+
+        if (isAlreadySaved) {
+            const saveButton = reportContentEl.querySelector('#save-report-btn');
+            saveButton.innerHTML = updateIcon + 'Perbarui Laporan Tersimpan';
+            saveButton.className = 'flex items-center justify-center w-full bg-gradient-to-br from-yellow-500 to-orange-500 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 transition-all duration-300 transform hover:-translate-y-1 mt-4';
+        }
+        
+        reportContentEl.classList.remove('hidden');
+        
+        const notesTextarea = document.getElementById('notes-for-tomorrow');
+        if (notesTextarea && isAlreadySaved) {
+            notesTextarea.value = state.reportHistory[existingReportIndex].notes || '';
+        }
+    };
+
+    const renderReportHistory = () => {
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+
+        const monthlyReports = state.reportHistory.filter(report => {
+            const reportDate = new Date(report.date);
+            return reportDate.getMonth() === currentMonth && reportDate.getFullYear() === currentYear;
+        });
+
+        const monthlyIncome = monthlyReports.reduce((sum, r) => sum + r.totalIncome, 0);
+        const monthlyExpense = monthlyReports.reduce((sum, r) => sum + r.totalExpense, 0);
+        const monthlyProfit = monthlyReports.reduce((sum, r) => sum + r.profit, 0);
+
+        monthlySummaryEl.innerHTML = `
+            <div class="bg-green-50 p-4 rounded-lg border border-green-200"><p class="text-sm text-green-700">Pemasukan</p><p class="text-xl font-bold text-green-800">${formatCurrency(monthlyIncome)}</p></div>
+            <div class="bg-red-50 p-4 rounded-lg border border-red-200"><p class="text-sm text-red-700">Pengeluaran</p><p class="text-xl font-bold text-red-800">${formatCurrency(monthlyExpense)}</p></div>
+            <div class="bg-blue-50 p-4 rounded-lg border border-blue-200"><p class="text-sm text-blue-700">Profit</p><p class="text-xl font-bold text-blue-800">${formatCurrency(monthlyProfit)}</p></div>
+        `;
+
+        reportHistoryListEl.innerHTML = '';
+        if(state.reportHistory.length === 0) {
+            reportHistoryListEl.innerHTML = '<p class="text-gray-500 text-center py-4">Belum ada riwayat laporan.</p>';
+        } else {
+            [...state.reportHistory].reverse().forEach((report, index) => {
+                const originalIndex = state.reportHistory.length - 1 - index;
+                const itemEl = document.createElement('div');
+                itemEl.className = 'flex justify-between items-center bg-gray-50 p-3 rounded-md border border-gray-200';
+                itemEl.innerHTML = `
+                    <div>
+                        <p class="font-semibold">${formatDate(report.date)}</p>
+                        <p class="text-sm text-gray-600">Profit: <span class="font-medium text-blue-600">${formatCurrency(report.profit)}</span></p>
+                    </div>
+                    <button data-index="${originalIndex}" class="remove-history-item text-gray-400 hover:text-red-500 p-1 rounded-md transition-colors">${trashIcon}</button>
+                `;
+                reportHistoryListEl.appendChild(itemEl);
+            });
+        }
+    }
+
+    // --- EVENT HANDLERS ---
+    tabs.addEventListener('click', (e) => {
+        if (e.target.classList.contains('tab-button')) {
+            document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+            e.target.classList.add('active');
+            document.getElementById(e.target.dataset.tab).classList.add('active');
+        }
+    });
+
+    shoppingForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        state.shoppingList.push({
+            name: document.getElementById('item-name').value, qty: parseFloat(document.getElementById('item-qty').value),
+            unit: document.getElementById('item-unit').value, price: parseFloat(document.getElementById('item-price').value),
+        });
+        renderShoppingList();
+        shoppingForm.reset();
+        saveState();
+        flagReportForUpdate();
+    });
+
+    shoppingListEl.addEventListener('click', (e) => {
+        const button = e.target.closest('.remove-shopping-item');
+        if (button) { 
+            state.shoppingList.splice(button.dataset.index, 1); 
+            renderShoppingList(); 
+            saveState(); 
+            flagReportForUpdate();
+        }
+    });
+    
+    menuForm.addEventListener('submit', e => {
+        e.preventDefault();
+        state.menuItems.push({
+            name: document.getElementById('menu-name').value, portion: parseInt(document.getElementById('menu-portion').value), sold: 0, sellPrice: 0,
+        });
+        renderProductionMenu(); 
+        renderSalesMenu(); 
+        menuForm.reset(); 
+        saveState();
+        flagReportForUpdate();
+    });
+
+    menuListProductionEl.addEventListener('click', e => {
+         const button = e.target.closest('.remove-menu-item');
+         if(button) { 
+            state.menuItems.splice(button.dataset.index, 1); 
+            renderProductionMenu(); 
+            renderSalesMenu(); 
+            saveState(); 
+            flagReportForUpdate();
+        }
+    });
+
+    salesMenuEl.addEventListener('click', e => {
+        const button = e.target.closest('button');
+        if (!button || button.dataset.index === undefined) return;
+        const index = button.dataset.index;
+        let changed = false;
+        if (button.classList.contains('sell-btn-plus') && state.menuItems[index].sold < state.menuItems[index].portion) {
+            state.menuItems[index].sold++;
+            changed = true;
+        }
+        if (button.classList.contains('sell-btn-minus') && state.menuItems[index].sold > 0) {
+            state.menuItems[index].sold--;
+            changed = true;
+        }
+        
+        if (changed) {
+            renderSalesMenu();
+            saveState();
+            flagReportForUpdate();
+        }
+    });
+
+    salesMenuEl.addEventListener('change', e => {
+        if (e.target.classList.contains('price-input')) {
+            state.menuItems[e.target.dataset.index].sellPrice = parseFloat(e.target.value) || 0;
+            saveState();
+            flagReportForUpdate();
+        }
+    });
+
+    generateReportBtn.addEventListener('click', () => {
+        renderReport();
+        unflagReportForUpdate();
+    });
+    
+    reportContentEl.addEventListener('click', (e) => {
+        const button = e.target.closest('#save-report-btn');
+        if (button) {
+            const notes = document.getElementById('notes-for-tomorrow')?.value || '';
+            state.currentReportData.notes = notes;
+
+            const existingReportIndex = state.reportHistory.findIndex(report => report.date.split('T')[0] === state.currentReportData.date.split('T')[0]);
+
+            if (existingReportIndex > -1) {
+                state.reportHistory[existingReportIndex] = state.currentReportData;
+                showToast('Laporan berhasil diperbarui.', 'info');
+            } else {
+                state.reportHistory.push(state.currentReportData);
+                showToast('Laporan berhasil disimpan.', 'success');
+            }
+            
+            saveState();
+            renderReportHistory();
+            
+            button.innerHTML = updateIcon + 'Perbarui Laporan Tersimpan';
+            button.className = 'flex items-center justify-center w-full bg-gradient-to-br from-yellow-500 to-orange-500 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-400 transition-all duration-300 transform hover:-translate-y-1 mt-4';
+        }
+    });
+
+    resetDayBtn.addEventListener('click', () => {
+        if (!resetDayBtn.dataset.confirm) {
+            resetDayBtn.dataset.confirm = 'true';
+            resetDayBtn.textContent = 'Klik lagi untuk konfirmasi';
+            resetDayBtn.classList.add('!bg-red-500', '!text-white');
+            setTimeout(() => {
+               if(resetDayBtn.dataset.confirm) {
+                   resetDayBtn.dataset.confirm = '';
+                   resetDayBtn.textContent = 'Mulai Hari Baru';
+                   resetDayBtn.classList.remove('!bg-red-500', '!text-white');
+               }
+            }, 3000);
+            return;
+        }
+
+        state.shoppingList = [];
+        state.menuItems = [];
+    state.currentReportData = null;
+    reportContentEl.classList.add('hidden');
+    unflagReportForUpdate(); // Also unflag when starting new day
+    saveState();
+    renderAll();
+    showToast('Hari baru telah dimulai.', 'info');
+    
+    resetDayBtn.dataset.confirm = '';
+        resetDayBtn.textContent = 'Mulai Hari Baru';
+        resetDayBtn.classList.remove('!bg-red-500', '!text-white');
+    });
+
+    reportHistoryListEl.addEventListener('click', (e) => {
+        const button = e.target.closest('.remove-history-item');
+        if (!button) return;
+
+        if (!button.dataset.confirm) {
+            document.querySelectorAll('.remove-history-item[data-confirm="true"]').forEach(btn => {
+                btn.dataset.confirm = '';
+                btn.innerHTML = trashIcon;
+            });
+            
+            button.dataset.confirm = 'true';
+            button.innerHTML = 'Hapus?';
+            setTimeout(() => {
+                if (button.dataset.confirm) {
+                    button.dataset.confirm = '';
+                    button.innerHTML = trashIcon;
+                }
+            }, 3000);
+            return;
+        }
+
+        state.reportHistory.splice(button.dataset.index, 1);
+        saveState();
+        renderReportHistory();
+        showToast('Laporan telah dihapus.', 'success');
+    });
+    
+    // --- INITIAL LOAD ---
+    loadState();
+    renderAll();
+});
+</script>
+
+</body>
+</html>
+
